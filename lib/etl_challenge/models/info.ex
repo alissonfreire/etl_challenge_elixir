@@ -12,7 +12,7 @@ defmodule EtlChallenge.Models.Info do
     field :success_pages, :integer, default: 0
     field :failed_pages, :integer, default: 0
     field :last_page, :integer
-    field :last_stoped_page, :integer, default: 0
+    field :last_stopped_page, :integer, default: 0
     field :sort_strategy, :string
     field :all_numbers, {:array, :decimal}, default: []
     field :sorted_numbers, {:array, :decimal}, default: []
@@ -46,7 +46,7 @@ defmodule EtlChallenge.Models.Info do
     |> put_change(:fetched_pages, 0)
     |> put_change(:success_pages, 0)
     |> put_change(:failed_pages, 0)
-    |> put_change(:last_stoped_page, 0)
+    |> put_change(:last_stopped_page, 0)
     |> put_change(:sort_strategy, nil)
     |> put_change(:all_numbers, [])
     |> put_change(:sorted_numbers, [])

@@ -63,7 +63,7 @@ defmodule EtlChallenge.Services.InfoServiceTest do
           fetched_pages: 10,
           success_pages: 4,
           failed_pages: 5,
-          last_stoped_page: 9,
+          last_stopped_page: 9,
           sort_strategy: "merge",
           all_numbers: [2, 3, 1],
           sorted_numbers: [1, 2, 3],
@@ -80,7 +80,7 @@ defmodule EtlChallenge.Services.InfoServiceTest do
       assert info_1.is_finished == false
       assert info_1.fetched_pages == 0
       assert info_1.failed_pages == 0
-      assert info_1.last_stoped_page == 0
+      assert info_1.last_stopped_page == 0
       assert is_nil(info_1.sort_strategy)
       assert info_1.all_numbers == []
       assert info_1.sorted_numbers == []

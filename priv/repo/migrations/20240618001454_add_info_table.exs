@@ -9,7 +9,7 @@ defmodule EtlChallenge.Repo.Migrations.AddInfoTable do
       add :success_pages, :integer, default: 0
       add :failed_pages, :integer, default: 0
       add :last_page, :integer, default: 0
-      add :last_stoped_page, :integer, default: 0
+      add :last_stopped_page, :integer, default: 0
       add :sort_strategy, :string
       add :all_numbers, {:array, :decimal}, default: []
       add :sorted_numbers, {:array, :decimal}, default: []
