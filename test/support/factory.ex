@@ -5,4 +5,8 @@ defmodule EtlChallenge.Factory do
   def info_factory do
     %EtlChallenge.Models.Info{}
   end
+
+  def page_factory do
+    %EtlChallenge.Models.Page{}
+  end
 end
