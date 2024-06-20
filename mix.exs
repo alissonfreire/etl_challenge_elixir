@@ -36,6 +36,8 @@ defmodule EtlChallenge.MixProject do
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.10"},
       {:postgrex, ">= 0.0.0"},
+      {:scrivener, "~> 2.0"},
+      {:scrivener_ecto, "~> 2.0"},
       {:ex_machina, "~> 2.7.0", only: :test},
       {:phoenix_html, "~> 4.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
