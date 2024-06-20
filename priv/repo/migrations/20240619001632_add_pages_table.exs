@@ -2,7 +2,7 @@ defmodule EtlChallenge.Repo.Migrations.AddPagesTable do
   use Ecto.Migration
 
   def change do
-    create table(:pages) do
+    create table(:pages, primary_key: false) do
       add :page, :integer, primary_key: true
       add :is_failed, :boolean, default: false
       add :numbers, {:array, :decimal}, default: []
