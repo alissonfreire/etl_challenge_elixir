@@ -83,3 +83,5 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+config :etl_challenge, :page_api_url, System.get_env("PAGE_API_URL", "http://localhost:8000/api")
