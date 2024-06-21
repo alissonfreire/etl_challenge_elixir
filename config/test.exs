@@ -35,3 +35,7 @@ config :phoenix, :plug_init_mode, :runtime
 config :phoenix_live_view,
   # Enable helpful, but potentially expensive runtime checks
   enable_expensive_runtime_checks: true
+
+config :etl_challenge, :page_api_url, System.get_env("PAGE_API_URL", "localhost:8000/api")
+
+config :etl_challenge, :page_api_impl, EtlChallenge.Requests.Adapters.MockPageAPIImpl
