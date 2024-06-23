@@ -1,4 +1,7 @@
 import Config
+import Dotenvy
+
+source([".env", "#{config_env()}.env", System.get_env()])
 
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
@@ -16,19 +19,34 @@ import Config
 #
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
-if System.get_env("PHX_SERVER") do
+if env!("PHX_SERVER", :boolean, false) do
   config :etl_challenge, EtlChallengeWeb.Endpoint, server: true
 end
 
+
+if config_env() in [:dev, :test] do
+  database = if config_env() == :dev,
+    do: env!("DB_DATABASE", :string, "etl_challenge_dev"),
+    else: System.get_env("DB_DATABASE", "etl_challenge_test#{env!("MIX_TEST_PARTITION", :integer, "")}")
+
+  # Configure your database
+  config :etl_challenge, EtlChallenge.Repo,
+    hostname: env!("DB_HOST", :string, "localhost"),
+    username: env!("DB_USER", :string, "postgres"),
+    password: env!("DB_PASS", :string, "postgres"),
+    database: database
+end
+
+
 if config_env() == :prod do
   database_url =
-    System.get_env("DATABASE_URL") ||
+    env!("DATABASE_URL", :string!) ||
       raise """
       environment variable DATABASE_URL is missing.
       For example: ecto://USER:PASS@HOST/DATABASE
       """
 
-  maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
+  maybe_ipv6 = if env!("ECTO_IPV6", :boolean, false), do: [:inet6], else: []
 
   config :etl_challenge, EtlChallenge.Repo,
     # ssl: true,
@@ -42,16 +60,16 @@ if config_env() == :prod do
   # to check this value into version control, so we use an environment
   # variable instead.
   secret_key_base =
-    System.get_env("SECRET_KEY_BASE") ||
+    env!("SECRET_KEY_BASE", :string!) ||
       raise """
       environment variable SECRET_KEY_BASE is missing.
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "example.com"
-  port = String.to_integer(System.get_env("PORT") || "4000")
+  host = env!("PHX_HOST", :string, "example.com")
+  port = env!("PORT", :integer, 4000)
 
-  config :etl_challenge, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+  config :etl_challenge, :dns_cluster_query, env!("DNS_CLUSTER_QUERY", :string)
 
   config :etl_challenge, EtlChallengeWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
