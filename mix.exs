@@ -53,6 +53,7 @@ defmodule EtlChallenge.MixProject do
        app: false,
        compile: false,
        depth: 1},
+      {:dotenvy, "~> 0.8.0"},
       {:tesla, "~> 1.9"},
       {:hackney, "~> 1.20"},
       {:mox, "~> 1.0", only: :test},
