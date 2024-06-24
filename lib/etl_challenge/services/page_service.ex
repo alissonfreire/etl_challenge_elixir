@@ -5,6 +5,17 @@ defmodule EtlChallenge.Services.PageService do
 
   import Ecto.Query
 
+  @spec clear_all_pages() :: {:ok, integer()} | {:error, binary()}
+  def clear_all_pages do
+    case Repo.delete_all(Page) do
+      {n, nil} ->
+        {:ok, n}
+
+      error ->
+        {:error, "unexpected error on delete all pages reason: #{inspect(error)}"}
+    end
+  end
+
   @spec save_page(map()) :: {:ok, Page.t()} | {:error, Ecto.Changeset.t()}
   def save_page(params) do
     %Page{}
@@ -34,17 +45,17 @@ defmodule EtlChallenge.Services.PageService do
 
   @spec get_all_pages_stream() :: function()
   def get_all_pages_stream do
-    build_stream([page_order: :asc])
+    build_stream(page_order: :asc)
   end
 
   @spec get_success_pages_stream() :: function()
   def get_success_pages_stream do
-    build_stream([page_order: :asc, is_failed: false])
+    build_stream(page_order: :asc, is_failed: false)
   end
 
   @spec get_failed_pages_stream() :: function()
   def get_failed_pages_stream do
-    build_stream([page_order: :asc, is_failed: true])
+    build_stream(page_order: :asc, is_failed: true)
   end
 
   defp build_stream(params) do

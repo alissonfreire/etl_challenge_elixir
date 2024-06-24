@@ -115,4 +115,16 @@ defmodule EtlChallenge.Services.PageServiceTest do
       assert [1, 2, 3] = Enum.map(stream, & &1.page)
     end
   end
+
+  describe "clear_pages/0" do
+    test "it delete all pages" do
+      Enum.each(1..3, &Factory.insert(:page, page: &1, is_failed: true))
+      Enum.each(4..5, &Factory.insert(:page, page: &1, is_failed: false))
+
+      assert Repo.exists?(Page)
+
+      assert {:ok, 5} = PageService.clear_all_pages()
+      refute Repo.exists?(Page)
+    end
+  end
 end
