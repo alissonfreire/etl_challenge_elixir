@@ -1,9 +1,11 @@
 defmodule EtlChallenge.Services.PageServiceTest do
   use ExUnit.Case, async: true
 
+  alias EtlChallenge.Factory
   alias EtlChallenge.Models.Page
   alias EtlChallenge.Repo
-  alias EtlChallenge.Factory
+  alias EtlChallenge.Requests.Dtos.Error, as: ErrorDto
+  alias EtlChallenge.Requests.Dtos.Page, as: PageDto
   alias EtlChallenge.Services.PageService
 
   setup do
@@ -13,24 +15,85 @@ defmodule EtlChallenge.Services.PageServiceTest do
   end
 
   describe "save_page/2" do
-    test "save page with empty numbers list" do
+    test "don't insert page without page_number" do
+      assert {:error, changeset} = PageService.save_page(%{numbers: [1, 2, 3]})
+
+      assert %Ecto.Changeset{
+               valid?: false,
+               errors: [page: {"can't be blank", [validation: :required]}]
+             } = changeset
+    end
+
+    test "don't insert page with empty numbers list without fail reason" do
       refute Repo.exists?(Page)
 
-      assert {:ok, page} = PageService.save_page(%{page: 1, numbers: []})
+      assert {:error, changeset} = PageService.save_page(%{page: 1, numbers: []})
+
+      assert %Ecto.Changeset{
+               valid?: false,
+               errors: [numbers: {"can't be empty without fail reason", []}]
+             } = changeset
+
+      assert {:ok, page} =
+               PageService.save_page(%{
+                 page: 1,
+                 fail_reason: "api timeout",
+                 numbers: []
+               })
 
       assert page.page == 1
       assert page.is_failed == true
+      assert page.fail_reason == "api timeout"
       assert page.numbers == []
     end
 
-    test "successfully save page" do
+    test "successfully insert page" do
       refute Repo.exists?(Page)
 
       assert {:ok, page} = PageService.save_page(%{page: 1, numbers: [1, 2, 3]})
 
       assert page.page == 1
       assert page.is_failed == false
+      assert is_nil(page.fail_reason)
       assert page.numbers == [1, 2, 3]
+    end
+
+    test "successfully insert page from PageDto struct" do
+      refute Repo.exists?(Page)
+
+      assert {:ok, page} = PageService.save_page(%PageDto{page: 1, numbers: [1, 2, 3]})
+
+      assert page.page == 1
+      assert page.is_failed == false
+      assert is_nil(page.fail_reason)
+      assert page.numbers == [1, 2, 3]
+    end
+
+    test "successfully insert page from ErrorDto struct" do
+      refute Repo.exists?(Page)
+
+      assert {:ok, page} = PageService.save_page(%ErrorDto{page: 1, reason: "api timeout"})
+
+      assert page.page == 1
+      assert page.is_failed == true
+      assert page.numbers == []
+      assert page.fail_reason == "api timeout"
+    end
+
+    test "successfully update failed page with numbers" do
+      _page =
+        Factory.insert(:page,
+          page: 1,
+          is_failed: true,
+          fail_reason: "api timeout"
+        )
+
+      assert {:ok, page} = PageService.save_page(%PageDto{page: 1, numbers: [1, 2, 3]})
+
+      assert page.page == 1
+      assert page.is_failed == false
+      assert page.numbers == [1, 2, 3]
+      assert is_nil(page.fail_reason)
     end
   end
 

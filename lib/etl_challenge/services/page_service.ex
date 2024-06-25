@@ -1,7 +1,10 @@
 defmodule EtlChallenge.Services.PageService do
   @doc false
+
   alias EtlChallenge.Models.Page
   alias EtlChallenge.Repo
+  alias EtlChallenge.Requests.Dtos.Error, as: ErrorDto
+  alias EtlChallenge.Requests.Dtos.Page, as: PageDto
 
   import Ecto.Query
 
@@ -16,11 +19,32 @@ defmodule EtlChallenge.Services.PageService do
     end
   end
 
-  @spec save_page(map()) :: {:ok, Page.t()} | {:error, Ecto.Changeset.t()}
+  @spec save_page(page :: PageDto.t()) :: {:ok, Page.t()} | {:error, Ecto.Changeset.t()}
+  def save_page(%PageDto{} = page) do
+    save_page(%{page: page.page, numbers: page.numbers})
+  end
+
+  @spec save_page(error :: ErrorDto.t()) :: {:ok, Page.t()} | {:error, Ecto.Changeset.t()}
+  def save_page(%ErrorDto{} = error) do
+    save_page(%{page: error.page, fail_reason: error.reason})
+  end
+
+  @spec save_page(params :: map()) :: {:ok, Page.t()} | {:error, Ecto.Changeset.t()}
   def save_page(params) do
-    %Page{}
+    params
+    |> Map.get(:page)
+    |> maybe_load_page()
     |> Page.changeset(params)
     |> Repo.insert_or_update()
+  end
+
+  defp maybe_load_page(nil), do: %Page{page: nil}
+
+  defp maybe_load_page(page) do
+    case Repo.get(Page, page) do
+      nil -> %Page{page: page}
+      page -> page
+    end
   end
 
   @spec get_page(integer()) :: {:error, :not_found} | {:ok, any()}

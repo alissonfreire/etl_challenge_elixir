@@ -24,18 +24,19 @@ defmodule EtlChallenge.Models.Page do
     |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
     |> validate_number(:page, greater_than_or_equal_to: 1)
-    |> maybe_put_is_failed()
+    |> maybe_override_is_failed_and_reason()
     |> validate_empty_numbers()
     |> validate_fail_reason()
     |> put_last_fetched_at()
   end
 
-  defp maybe_put_is_failed(changeset) do
-    is_failed = not (changeset |> get_change(:fail_reason) |> is_nil())
+  defp maybe_override_is_failed_and_reason(changeset) do
+    fail_reason = get_change(changeset, :fail_reason)
+    is_failed = not is_nil(fail_reason)
 
     changeset
     |> put_change(:is_failed, is_failed)
-    |> put_change(:fail_reason, nil)
+    |> put_change(:fail_reason, fail_reason)
   end
 
   defp validate_empty_numbers(changeset) do
