@@ -14,23 +14,23 @@ defmodule EtlChallenge.Requests.Adapters.PageAPIImpl do
   def fetch_page(page_number) do
     client()
     |> Tesla.get("#{@pages_prefix}/#{page_number}")
-    |> build_response()
+    |> build_response(page_number)
   end
 
-  defp build_response({:ok, %Tesla.Env{status: 200, body: body}}) do
-    page = %Page{page: body["page"], numbers: body["numbers"]}
+  defp build_response({:ok, %Tesla.Env{status: 200, body: body}}, page_number) do
+    page = %Page{page: page_number, numbers: body["numbers"]}
 
     {:ok, %PageResponse{status: PageResponse.success, data: page}}
   end
 
-  defp build_response({:ok, %Tesla.Env{status: status, body: body}}) do
-    error = %Error{reason: "response error with: #{status} and reason: #{inspect(body)}"}
+  defp build_response({:ok, %Tesla.Env{status: status, body: body}}, page_number) do
+    error = %Error{page: page_number, reason: "response error with: #{status} and reason: #{inspect(body)}"}
 
     {:ok, %PageResponse{status: PageResponse.fail, error: error}}
   end
 
-  defp build_response({:error, error}) do
-    error = %Error{reason: "unexpected api error reason: #{inspect(error)}"}
+  defp build_response({:error, error}, page_number) do
+    error = %Error{page: page_number, reason: "unexpected api error reason: #{inspect(error)}"}
 
     {:ok, %PageResponse{status: PageResponse.fail, error: error}}
   end
