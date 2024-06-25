@@ -6,11 +6,12 @@ defmodule EtlChallenge.Models.Page do
   @type t :: %__MODULE__{}
 
   @required_fields ~w(page)a
-  @optional_fields ~w(numbers is_failed sorted_numbers last_fetched_at)a
+  @optional_fields ~w(numbers is_failed fail_reason sorted_numbers last_fetched_at)a
 
   @primary_key {:page, :integer, autogenerate: false}
   schema "pages" do
     field :is_failed, :boolean, default: false
+    field :fail_reason, :string
     field :last_fetched_at, :utc_datetime
     field :numbers, {:array, :float}, default: []
     field :sorted_numbers, {:array, :float}, default: []
@@ -24,22 +25,42 @@ defmodule EtlChallenge.Models.Page do
     |> validate_required(@required_fields)
     |> validate_number(:page, greater_than_or_equal_to: 1)
     |> maybe_put_is_failed()
+    |> validate_empty_numbers()
+    |> validate_fail_reason()
     |> put_last_fetched_at()
   end
 
   defp maybe_put_is_failed(changeset) do
+    is_failed = not (changeset |> get_change(:fail_reason) |> is_nil())
+
     changeset
-    |> get_field(:numbers, [])
-    |> case do
-      [] -> true
-      [_ | _] -> false
+    |> put_change(:is_failed, is_failed)
+    |> put_change(:fail_reason, nil)
+  end
+
+  defp validate_empty_numbers(changeset) do
+    numbers = changeset |> get_field(:numbers, []) |> Enum.empty?()
+
+    if numbers and not get_field(changeset, :is_failed) do
+      add_error(changeset, :numbers, "can't be empty without fail reason")
+    else
+      changeset
     end
-    |> then(&put_change(changeset, :is_failed, &1))
   end
 
   defp put_last_fetched_at(changeset) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     changeset |> put_change(:last_fetched_at, now)
+  end
+
+  defp validate_fail_reason(changeset) do
+    reason = get_field(changeset, :fail_reason)
+
+    if get_field(changeset, :is_failed) and reason in [nil, ""] do
+      add_error(changeset, :fail_reason, "can't be blank")
+    else
+      changeset
+    end
   end
 end
