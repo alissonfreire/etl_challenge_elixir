@@ -11,8 +11,8 @@ defmodule EtlChallenge.Repo.Migrations.AddInfoTable do
       add :last_page, :integer, default: 0
       add :last_stopped_page, :integer, default: 0
       add :sort_strategy, :string
-      add :all_numbers, {:array, :decimal}, default: []
-      add :sorted_numbers, {:array, :decimal}, default: []
+      add :all_numbers, {:array, :float}, default: []
+      add :sorted_numbers, {:array, :float}, default: []
       add :start_fecthed_at, :utc_datetime, null: true
       add :finish_fecthed_at, :utc_datetime, null: true
     end

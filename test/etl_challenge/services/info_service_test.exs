@@ -90,6 +90,36 @@ defmodule EtlChallenge.Services.InfoServiceTest do
     end
   end
 
+  describe "update_info/1" do
+    test "successfully update info" do
+      Factory.insert(:info)
+
+      params = %{
+        attempt: 2,
+        is_finished: false,
+        fetched_pages: 5,
+        success_pages: 3,
+        failed_pages: 2,
+        last_stopped_page: 2,
+        last_page: 10,
+        all_numbers: [3, 2, 1],
+        sorted_numbers: [1, 2, 3]
+      }
+
+      assert {:ok, info} = InfoService.update_info(params)
+
+      assert info.attempt == params.attempt
+      assert info.is_finished == params.is_finished
+      assert info.fetched_pages == params.fetched_pages
+      assert info.success_pages == params.success_pages
+      assert info.failed_pages == params.failed_pages
+      assert info.last_stopped_page == params.last_stopped_page
+      assert info.last_page == params.last_page
+      assert info.all_numbers == params.all_numbers
+      assert info.sorted_numbers == params.sorted_numbers
+    end
+  end
+
   describe "increment_success_pages/2" do
     test "increment success_pages and fetched_pages" do
       actual_info =
@@ -117,6 +147,39 @@ defmodule EtlChallenge.Services.InfoServiceTest do
       assert info_1.id == actual_info.id
       assert info_1.fetched_pages == actual_info.fetched_pages
       assert info_1.success_pages == actual_info.success_pages + 1
+    end
+
+    test "increment and set last_stopped_page" do
+      actual_info =
+        Factory.insert(:info,
+          fetched_pages: 10,
+          success_pages: 10,
+          last_stopped_page: 0,
+          is_finished: false
+        )
+
+      assert {:ok, info_1} = InfoService.increment_success_pages(set_last_stopped_page: true)
+
+      assert info_1.id == actual_info.id
+      assert info_1.last_stopped_page == actual_info.fetched_pages + 1
+      assert info_1.success_pages == actual_info.success_pages + 1
+      assert info_1.is_finished == true
+    end
+
+    test "increment and set specific last_stopped_page" do
+      actual_info =
+        Factory.insert(:info,
+          success_pages: 1,
+          last_stopped_page: 1,
+          is_finished: false
+        )
+
+      assert {:ok, info_1} = InfoService.increment_success_pages(last_stopped_page: 5)
+
+      assert info_1.id == actual_info.id
+      assert info_1.last_stopped_page == 5
+      assert info_1.success_pages == actual_info.success_pages + 1
+      assert info_1.is_finished == false
     end
   end
 
@@ -148,30 +211,55 @@ defmodule EtlChallenge.Services.InfoServiceTest do
       assert info_1.fetched_pages == actual_info.fetched_pages
       assert info_1.failed_pages == actual_info.failed_pages + 1
     end
+
+    test "increment and set last_stopped_page" do
+      actual_info =
+        Factory.insert(:info,
+          fetched_pages: 10,
+          success_pages: 10,
+          last_stopped_page: 0,
+          is_finished: false
+        )
+
+      assert {:ok, info_1} = InfoService.increment_failed_pages(set_last_stopped_page: true)
+
+      assert info_1.id == actual_info.id
+      assert info_1.last_stopped_page == actual_info.fetched_pages + 1
+      assert info_1.failed_pages == actual_info.failed_pages + 1
+      assert info_1.is_finished == true
+    end
+
+    test "increment and set specific last_stopped_page" do
+      actual_info =
+        Factory.insert(:info,
+          failed_pages: 1,
+          last_stopped_page: 1,
+          is_finished: false
+        )
+
+      assert {:ok, info_1} = InfoService.increment_failed_pages(last_stopped_page: 5)
+
+      assert info_1.id == actual_info.id
+      assert info_1.last_stopped_page == 5
+      assert info_1.failed_pages == actual_info.failed_pages + 1
+      assert info_1.is_finished == false
+    end
   end
 
   describe "set_all_numbers/1" do
     test "successfully set all_numbers" do
-      actual_info =
-        Factory.insert(:info,
-          is_finished: false,
-          all_numbers: []
-        )
+      actual_info = Factory.insert(:info, all_numbers: [])
 
       assert {:ok, info_1} = InfoService.set_all_numbers([2, 5, 1, 4, 3])
 
       assert info_1.id == actual_info.id
       refute info_1.all_numbers == actual_info.all_numbers
-      assert info_1.is_finished == true
     end
   end
 
   describe "set_sorted_numbers/1" do
     test "successfully set sorted_numbers" do
-      actual_info =
-        Factory.insert(:info,
-          sorted_numbers: []
-        )
+      actual_info = Factory.insert(:info, sorted_numbers: [])
 
       assert {:ok, info_1} = InfoService.set_sorted_numbers([1, 2, 3, 4, 5, 6])
 
