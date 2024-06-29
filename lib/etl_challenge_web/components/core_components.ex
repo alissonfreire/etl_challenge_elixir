@@ -305,6 +305,7 @@ defmodule EtlChallengeWeb.CoreComponents do
   def input(%{type: "checkbox"} = assigns) do
     assigns =
       assign_new(assigns, :checked, fn ->
+        # credo:disable-for-next-line
         Phoenix.HTML.Form.normalize_value("checkbox", assigns[:value])
       end)
 

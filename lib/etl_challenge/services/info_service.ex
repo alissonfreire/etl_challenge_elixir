@@ -1,5 +1,7 @@
 defmodule EtlChallenge.Services.InfoService do
-  @moduledoc false
+  @moduledoc """
+  This module is responsible to handle info operations like: retrive info and update info state
+  """
   alias EtlChallenge.Models.Info
   alias EtlChallenge.Repo
 

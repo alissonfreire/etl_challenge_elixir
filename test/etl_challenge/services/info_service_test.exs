@@ -1,16 +1,10 @@
 defmodule EtlChallenge.Services.InfoServiceTest do
-  use ExUnit.Case, async: true
+  use EtlChallenge.DataCase, async: true
 
+  alias EtlChallenge.Factory
   alias EtlChallenge.Models.Info
   alias EtlChallenge.Repo
-  alias EtlChallenge.Factory
   alias EtlChallenge.Services.InfoService
-
-  setup do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(EtlChallenge.Repo)
-
-    :ok
-  end
 
   describe "setup_info/1" do
     test "with invalid params" do

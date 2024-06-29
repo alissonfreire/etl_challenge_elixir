@@ -1,5 +1,5 @@
 defmodule EtlChallenge.Services.PageServiceTest do
-  use ExUnit.Case, async: true
+  use EtlChallenge.DataCase, async: true
 
   alias EtlChallenge.Factory
   alias EtlChallenge.Models.Page
@@ -7,12 +7,6 @@ defmodule EtlChallenge.Services.PageServiceTest do
   alias EtlChallenge.Requests.Dtos.Error, as: ErrorDto
   alias EtlChallenge.Requests.Dtos.Page, as: PageDto
   alias EtlChallenge.Services.PageService
-
-  setup do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(EtlChallenge.Repo)
-
-    :ok
-  end
 
   describe "save_page/2" do
     test "don't insert page without page_number" do

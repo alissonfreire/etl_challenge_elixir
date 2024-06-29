@@ -77,18 +77,22 @@ defmodule EtlChallenge.Extractor do
   end
 
   defp call_hook(args, hook, ctx) do
+    maybe_execute_hook_callback(args, hook, ctx)
+
+    args
+  end
+
+  defp maybe_execute_hook_callback(args, hook, ctx) do
     case Map.get(ctx, :hook_handler) do
       nil ->
         :ok
 
       hook_cb when is_atom(hook_cb) ->
-        apply(hook_cb, :call, [hook, args, ctx])
+        hook_cb.call(hook, args, ctx)
 
       hook_cb when is_function(hook_cb) ->
-        apply(hook_cb, [hook, args, ctx])
+        hook_cb.(hook, args, ctx)
     end
-
-    args
   end
 
   defp get_page_range(%Context{params: params}), do: get_page_range(params)

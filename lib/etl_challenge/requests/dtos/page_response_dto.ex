@@ -14,6 +14,6 @@ defmodule EtlChallenge.Requests.Dtos.PageResponse do
   def success, do: :success
   def fail, do: :fail
 
-  def is_success?(%__MODULE__{status: status}), do: status == :success
-  def is_fail?(%__MODULE__{status: status}), do: status == :fail
+  def success?(%__MODULE__{status: status}), do: status == :success
+  def fail?(%__MODULE__{status: status}), do: status == :fail
 end

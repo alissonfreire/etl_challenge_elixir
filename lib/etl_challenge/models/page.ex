@@ -1,4 +1,7 @@
 defmodule EtlChallenge.Models.Page do
+  @moduledoc """
+  Page model responsible for mapping the page record from the 'pages' table
+  """
   use Ecto.Schema
 
   import Ecto.Changeset
@@ -19,7 +22,7 @@ defmodule EtlChallenge.Models.Page do
     timestamps()
   end
 
-  def changeset(page = %__MODULE__{}, attrs) do
+  def changeset(%__MODULE__{} = page, attrs) do
     page
     |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)

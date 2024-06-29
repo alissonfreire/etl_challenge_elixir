@@ -1,8 +1,10 @@
 defmodule EtlChallenge.Extractor.Context do
-  @moduledoc false
+  @moduledoc """
+  Carries the extractor contex info like params, hook_handler and Info.t()
+  """
 
-  alias EtlChallenge.Services.InfoService
   alias EtlChallenge.Models.Info
+  alias EtlChallenge.Services.InfoService
 
   defstruct params: %{},
             hook_handler: nil,
@@ -12,6 +14,7 @@ defmodule EtlChallenge.Extractor.Context do
 
   @last_page 100
 
+  @spec build_from_params(keyword() | map()) :: __MODULE__.t()
   def build_from_params(params) when is_list(params) do
     params
     |> Map.new()

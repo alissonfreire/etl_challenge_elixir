@@ -1,5 +1,6 @@
 defmodule EtlChallenge.Factory do
-  # with Ecto
+  @moduledoc false
+
   use ExMachina.Ecto, repo: EtlChallenge.Repo
 
   def info_factory do

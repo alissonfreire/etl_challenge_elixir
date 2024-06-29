@@ -1,5 +1,5 @@
 defmodule EtlChallenge.ExtractorTest do
-  use ExUnit.Case, async: true
+  use EtlChallenge.DataCase, async: true
 
   import Mox
 
@@ -16,12 +16,6 @@ defmodule EtlChallenge.ExtractorTest do
   alias EtlChallenge.Services.{InfoService, PageService}
 
   @default_numbers Enum.to_list(1..10)
-
-  setup do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(EtlChallenge.Repo)
-
-    :ok
-  end
 
   describe "start_fetch/1" do
     test "run until the last page" do

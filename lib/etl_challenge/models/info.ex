@@ -1,4 +1,7 @@
 defmodule EtlChallenge.Models.Info do
+  @moduledoc """
+  Page model responsible for mapping the page record from the 'info' table
+  """
   use Ecto.Schema
   alias EtlChallenge.Repo
 
@@ -131,7 +134,7 @@ defmodule EtlChallenge.Models.Info do
         ) :: Ecto.Changeset.t()
   def set_last_stopped_page(info \\ nil, page \\ nil)
 
-  def set_last_stopped_page(_info = nil, page) do
+  def set_last_stopped_page(nil = _info, page) do
     get_info() |> set_last_stopped_page(page)
   end
 

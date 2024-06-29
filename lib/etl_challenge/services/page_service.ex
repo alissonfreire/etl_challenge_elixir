@@ -1,5 +1,8 @@
 defmodule EtlChallenge.Services.PageService do
-  @doc false
+  @moduledoc """
+  This module is responsible to handle page operations like: create/update/delete pages,
+  compile and return page statistics and searches pages by given parameters
+  """
 
   alias EtlChallenge.Models.Page
   alias EtlChallenge.Repo
@@ -7,6 +10,12 @@ defmodule EtlChallenge.Services.PageService do
   alias EtlChallenge.Requests.Dtos.Page, as: PageDto
 
   import Ecto.Query
+
+  @type stats() :: %{
+          total: integer(),
+          total_failed: integer(),
+          total_success: integer()
+        }
 
   @spec clear_all_pages() :: {:ok, integer()} | {:error, binary()}
   def clear_all_pages do
@@ -19,6 +28,25 @@ defmodule EtlChallenge.Services.PageService do
     end
   end
 
+  @doc """
+  Create or update a page based on input params. Input params could be a EtlChallenge.Requests.Dtos.Page.t(),
+  EtlChallenge.Requests.Dtos.Error.t() or a simple map with page params
+
+  ## Examples
+
+    iex> alias EtlChallenge.Requests.Dtos.Page, as: PageDto
+    iex> alias EtlChallenge.Requests.Dtos.Error, as: ErrorDto
+    iex> alias EtlChallenge.Services.PageService
+
+    iex> PageService.save_page(%{page: 1, numbers: [1,2,3]})
+    {:ok, %EtlChallenge.Models.Page{page: 1, numbers: [1,2,3], is_failed: false}}
+
+    iex> PageService.save_page(%PageDto{page: 1, numbers: [1,2,3]})
+    {:ok, %EtlChallenge.Models.Page{page: 1, numbers: [1,2,3], is_failed: false}}
+
+    iex> PageService.save_page(%ErrorDto{page: 1, reason: "api timeout"})
+    {:ok, %EtlChallenge.Models.Page{page: 1, fail_reason: "api timeout", is_failed: true}}
+  """
   @spec save_page(page :: PageDto.t()) :: {:ok, Page.t()} | {:error, Ecto.Changeset.t()}
   def save_page(%PageDto{} = page) do
     save_page(%{page: page.page, numbers: page.numbers})
@@ -47,6 +75,19 @@ defmodule EtlChallenge.Services.PageService do
     end
   end
 
+  @doc """
+  Returns a page model or not found error
+
+  ## Examples
+
+    iex> alias EtlChallenge.Services.PageService
+
+    iex> PageService.get_page(1)
+    {:ok, %EtlChallenge.Models.Page{page: 1, numbers: [1,2,3]}}
+
+    iex> PageService.get_page(2)
+    {:error, :not_found}
+  """
   @spec get_page(integer()) :: {:error, :not_found} | {:ok, any()}
   def get_page(page_number) do
     case Repo.get_by(Page, page: page_number) do
@@ -55,7 +96,17 @@ defmodule EtlChallenge.Services.PageService do
     end
   end
 
-  @spec stats() :: map()
+  @doc """
+  Returns page statistics with total pages searched, total failed and successful pages
+
+  ## Examples
+
+    iex> alias EtlChallenge.Services.PageService
+
+    iex> PageService.stats()
+    %{total: 9, total_failed: 4, total_success: 5)}
+  """
+  @spec stats() :: stats()
   def stats do
     from(p in Page,
       select: %{
