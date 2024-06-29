@@ -3,5 +3,5 @@ defmodule EtlChallenge.Extractor.HookHandlerBehaviour do
 
   alias EtlChallenge.Extractor.Context
 
-  @callback call(hook:: atom(), args :: any(), ctx :: Context.t()) :: :ok
+  @callback call(hook :: atom(), args :: any(), ctx :: Context.t()) :: :ok
 end

@@ -21,7 +21,7 @@ defmodule EtlChallenge.Requests.PageAPITest do
           numbers: numbers
         }
 
-        {:ok, %PageResponse{status: PageResponse.success, data: page}}
+        {:ok, %PageResponse{status: PageResponse.success(), data: page}}
       end)
 
       assert {:ok, %Page{} = page} = PageAPI.fetch_page(page_number)
@@ -38,7 +38,7 @@ defmodule EtlChallenge.Requests.PageAPITest do
           reason: "invalid api response"
         }
 
-        {:ok, %PageResponse{status: PageResponse.fail, error: error}}
+        {:ok, %PageResponse{status: PageResponse.fail(), error: error}}
       end)
 
       assert {:error, %Error{} = error} = PageAPI.fetch_page(page_number)

@@ -23,11 +23,15 @@ if env!("PHX_SERVER", :boolean, false) do
   config :etl_challenge, EtlChallengeWeb.Endpoint, server: true
 end
 
-
 if config_env() in [:dev, :test] do
-  database = if config_env() == :dev,
-    do: env!("DB_DATABASE", :string, "etl_challenge_dev"),
-    else: System.get_env("DB_DATABASE", "etl_challenge_test#{env!("MIX_TEST_PARTITION", :integer, "")}")
+  database =
+    if config_env() == :dev,
+      do: env!("DB_DATABASE", :string, "etl_challenge_dev"),
+      else:
+        System.get_env(
+          "DB_DATABASE",
+          "etl_challenge_test#{env!("MIX_TEST_PARTITION", :integer, "")}"
+        )
 
   # Configure your database
   config :etl_challenge, EtlChallenge.Repo,
@@ -36,7 +40,6 @@ if config_env() in [:dev, :test] do
     password: env!("DB_PASS", :string, "postgres"),
     database: database
 end
-
 
 if config_env() == :prod do
   database_url =
