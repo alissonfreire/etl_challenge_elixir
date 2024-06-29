@@ -1,18 +1,19 @@
 defmodule EtlChallenge.ExtractorTest do
   use ExUnit.Case, async: true
 
-  alias EtlChallenge.Services.InfoService
-  alias EtlChallenge.Services.PageService
+  import Mox
+
   alias EtlChallenge.Extractor
+  alias EtlChallenge.Extractor.Context
+  alias EtlChallenge.Extractor.HookHandlerMock
   alias EtlChallenge.Factory
   alias EtlChallenge.Models.{Info, Page}
   alias EtlChallenge.Repo
   alias EtlChallenge.Requests.Adapters.MockPageAPIImpl
-  alias EtlChallenge.Requests.Dtos.Page, as: PageDto
   alias EtlChallenge.Requests.Dtos.Error, as: ErrorDto
+  alias EtlChallenge.Requests.Dtos.Page, as: PageDto
   alias EtlChallenge.Requests.Dtos.PageResponse
-
-  import Mox
+  alias EtlChallenge.Services.{InfoService, PageService}
 
   @default_numbers Enum.to_list(1..10)
 
@@ -119,6 +120,52 @@ defmodule EtlChallenge.ExtractorTest do
       assert info.success_pages == 5
       assert info.failed_pages == 0
       assert info.last_stopped_page == 5
+    end
+  end
+
+  describe "start_fetch/1 with hook callbacks" do
+    test "call all callback hooks as anonymous function" do
+      ref = make_ref()
+      me = self()
+
+      hook_handler = fn hook, args, %Context{} ->
+        send(me, {ref, {hook, args}})
+      end
+
+      mock_page_api(:success, num_calls: 1)
+
+      assert {:ok, _info} =
+               Extractor.start_fetch(
+                 last_page: 1,
+                 until_last_page: true,
+                 hook_handler: hook_handler
+               )
+
+      assert_receive {^ref, {:pre_fetch_page, 1}}
+      assert_receive {^ref, {:pos_fetch_page, {:ok, _page}}}
+      assert_receive {^ref, {:pos_handle_page, _args}}
+    end
+
+    test "call all callback hooks as hook_handler module" do
+      ref = make_ref()
+      me = self()
+
+      expect(HookHandlerMock, :call, 3, fn hook, args, %Context{} ->
+        send(me, {ref, {hook, args}})
+      end)
+
+      mock_page_api(:success, num_calls: 1)
+
+      assert {:ok, _info} =
+               Extractor.start_fetch(
+                 last_page: 1,
+                 until_last_page: true,
+                 hook_handler: HookHandlerMock
+               )
+
+      assert_receive {^ref, {:pre_fetch_page, 1}}
+      assert_receive {^ref, {:pos_fetch_page, {:ok, _page}}}
+      assert_receive {^ref, {:pos_handle_page, _args}}
     end
   end
 
