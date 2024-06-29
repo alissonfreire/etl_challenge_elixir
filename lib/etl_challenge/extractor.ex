@@ -1,6 +1,7 @@
 defmodule EtlChallenge.Extractor do
   @moduledoc false
 
+  alias EtlChallenge.Extractor.Context
   alias EtlChallenge.Models.Info
   alias EtlChallenge.Models.Page
   alias EtlChallenge.Requests.Dtos.Error, as: ErrorDto
@@ -12,42 +13,38 @@ defmodule EtlChallenge.Extractor do
   @spec start_fetch(info :: Info.t() | nil, keyword() | map()) :: {:ok, Info.t()}
   def start_fetch(info \\ nil, params)
 
-  def start_fetch(_info = nil, params) do
-    last_page = Access.get(params, :last_page, 10_000)
-
-    info =
-      if Access.get(params, :reset_info, false) do
-        InfoService.get_info()
-      else
-        {:ok, info} = InfoService.setup_info(%{last_page: last_page})
-        info
-      end
-
-    start_fetch(info, params)
-  end
-
   def start_fetch(info, params) do
-    params = build_params(params)
+    ctx = build_context(info, params)
 
-    params
+    ctx
     |> get_page_range()
-    |> build_stream(info)
+    |> build_stream(ctx)
     |> Stream.run()
 
     {:ok, InfoService.get_info()}
   end
 
-  defp build_params(%{} = params), do: params
-
-  defp build_params(params) when is_list(params) do
-    Map.new(params)
+  defp build_context(info, params) do
+    info
+    |> maybe_put_info(params)
+    |> Context.build_from_params()
   end
 
-  defp build_stream(range, info) do
+  defp maybe_put_info(nil, params), do: params
+
+  defp maybe_put_info(info, params) when is_list(params) do
+    Keyword.put(params, :info, info)
+  end
+
+  defp maybe_put_info(info, params) when is_map(params) do
+    Map.put(params, :info, info)
+  end
+
+  defp build_stream(range, ctx) do
     Stream.transform(
       range,
-      fn -> info end,
-      &perform_page/2,
+      fn -> ctx end,
+      &perform_page(&2, &1, ctx),
       &last_function/1
     )
   end
@@ -62,19 +59,39 @@ defmodule EtlChallenge.Extractor do
     })
   end
 
-  defp perform_page(%Page{page: page_number}, acc) do
-    perform_page(page_number, acc)
+  defp perform_page(acc, %Page{page: page_number}, ctx) do
+    perform_page(acc, page_number, ctx)
   end
 
-  defp perform_page(page_number, _acc) do
+  defp perform_page(_acc, page_number, ctx) do
     page_number
+    |> call_hook(:pre_fetch_page, ctx)
     |> fetch_page()
+    |> call_hook(:pos_fetch_page, ctx)
     |> handle_fetch()
+    |> call_hook(:pos_handle_page, ctx)
     |> case do
       {:ok, info} ->
-        {[page_number], info}
+        {[page_number], Map.put(ctx, :info, info)}
     end
   end
+
+  defp call_hook(args, hook, ctx) do
+    case Map.get(ctx, :hook_handler) do
+      nil ->
+        :ok
+
+      hook_cb when is_atom(hook_cb) ->
+        apply(hook_cb, :call, [hook, args, ctx])
+
+      hook_cb when is_function(hook_cb) ->
+        apply(hook_cb, [hook, args, ctx])
+    end
+
+    args
+  end
+
+  defp get_page_range(%Context{params: params}), do: get_page_range(params)
 
   defp get_page_range(%{last_page: last_page, until_last_page: true}) do
     1..last_page
@@ -91,15 +108,23 @@ defmodule EtlChallenge.Extractor do
   end
 
   defp handle_fetch({:ok, %PageDto{} = page}) do
-    {:ok, %Page{page: page_number}} = PageService.save_page(page)
+    case PageService.save_page(page) do
+      {:ok, %Page{page: page_number}} ->
+        InfoService.increment_success_pages(last_stopped_page: page_number)
 
-    {:ok, InfoService.increment_success_pages(last_stopped_page: page_number)}
+      error ->
+        error
+    end
   end
 
   defp handle_fetch({:error, %ErrorDto{} = page}) do
-    {:ok, %Page{page: page_number}} = PageService.save_page(page)
+    case PageService.save_page(page) do
+      {:ok, %Page{page: page_number}} ->
+        InfoService.increment_failed_pages(last_stopped_page: page_number)
 
-    {:ok, InfoService.increment_failed_pages(last_stopped_page: page_number)}
+      error ->
+        error
+    end
   end
 
   defp fetch_page(page_number) do
