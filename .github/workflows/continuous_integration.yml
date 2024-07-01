@@ -82,10 +82,10 @@ jobs:
       - name: Run tests
         run: mix test
         env:
-          DB_HOST: postgres
+          DB_HOST: localhost
           DB_PASS: postgres
           DB_USER: postgres
-          POSTGRES_HOST: postgres
+          POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
 
     services:
