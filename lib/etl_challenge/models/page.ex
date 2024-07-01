@@ -13,7 +13,7 @@ defmodule EtlChallenge.Models.Page do
 
   @primary_key {:page, :integer, autogenerate: false}
   schema "pages" do
-    field :is_failed, :boolean, default: false
+    field :is_failed, :boolean
     field :fail_reason, :string
     field :last_fetched_at, :utc_datetime
     field :numbers, {:array, :float}, default: []
@@ -27,14 +27,14 @@ defmodule EtlChallenge.Models.Page do
     |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
     |> validate_number(:page, greater_than_or_equal_to: 1)
-    |> maybe_override_is_failed_and_reason()
-    |> validate_empty_numbers()
+    |> maybe_override_is_failed_and_reason(attrs)
     |> validate_fail_reason()
+    |> validate_empty_numbers()
     |> put_last_fetched_at()
   end
 
-  defp maybe_override_is_failed_and_reason(changeset) do
-    fail_reason = get_change(changeset, :fail_reason)
+  defp maybe_override_is_failed_and_reason(changeset, attrs) do
+    fail_reason = get_change(changeset, :fail_reason, attrs[:fail_reason])
     is_failed = not is_nil(fail_reason)
 
     changeset
