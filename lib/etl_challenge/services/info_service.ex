@@ -9,14 +9,6 @@ defmodule EtlChallenge.Services.InfoService do
   def get_info, do: Info.get_info()
 
   @doc """
-    Reset all info fields
-  """
-  @spec reset_info() :: {:ok, Info.t()} | {:error, Ecto.Changeset.t()}
-  def reset_info do
-    Info.reset_changeset() |> Repo.insert_or_update()
-  end
-
-  @doc """
     Setup info table with params
 
     ## params
