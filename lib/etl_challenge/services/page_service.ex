@@ -29,6 +29,17 @@ defmodule EtlChallenge.Services.PageService do
   end
 
   @doc """
+  Returns a list of all page numbers ordered by page number
+  """
+  @spec get_all_page_numbers() :: [number()]
+  def get_all_page_numbers do
+    get_all_pages_stream()
+    |> Enum.reduce([], fn page, acc ->
+      acc ++ page.numbers
+    end)
+  end
+
+  @doc """
   Create or update a page based on input params. Input params could be a EtlChallenge.Requests.Dtos.Page.t(),
   EtlChallenge.Requests.Dtos.Error.t() or a simple map with page params
 

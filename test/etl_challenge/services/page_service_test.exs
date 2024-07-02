@@ -120,6 +120,21 @@ defmodule EtlChallenge.Services.PageServiceTest do
     end
   end
 
+  describe "get_all_page_numbers/0" do
+    test "returns all numbers" do
+      all_numbers =
+        Enum.reduce(1..10, [], fn page_number, acc ->
+          numbers = Enum.map(1..100, fn _ -> :rand.uniform() end)
+
+          Factory.insert(:page, page: page_number, is_failed: false, numbers: numbers)
+
+          acc ++ numbers
+        end)
+
+      assert ^all_numbers = PageService.get_all_page_numbers()
+    end
+  end
+
   describe "get_page/1" do
     test "returns a page given page_number" do
       Factory.insert(:page, page: 1, is_failed: true)
