@@ -9,7 +9,7 @@ defmodule EtlChallenge.Sort.QuickSortTest do
       assert QuickSort.sort([]) == Enum.sort([])
     end
 
-    test "with single item list list" do
+    test "with single item list" do
       assert QuickSort.sort([1]) == [1]
       assert QuickSort.sort([1]) == Enum.sort([1])
     end

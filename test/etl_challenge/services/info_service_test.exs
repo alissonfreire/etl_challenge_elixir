@@ -84,6 +84,42 @@ defmodule EtlChallenge.Services.InfoServiceTest do
     end
   end
 
+  describe "reset_info/0" do
+    test "successfuly reset info" do
+      yesterday =
+        DateTime.utc_now()
+        |> DateTime.add(-1, :day)
+        |> DateTime.truncate(:second)
+
+      actual_info =
+        Factory.insert(:info,
+          is_finished: true,
+          last_page: 10_000,
+          fetched_pages: 10,
+          success_pages: 4,
+          failed_pages: 5,
+          last_stopped_page: 9,
+          sort_strategy: "merge",
+          all_numbers: [2, 3, 1],
+          sorted_numbers: [1, 2, 3],
+          start_fecthed_at: yesterday,
+          finish_fecthed_at: yesterday
+        )
+
+      assert {:ok, info} = InfoService.reset_info()
+
+      assert info.id == actual_info.id
+      assert info.last_page == 0
+      assert info.fetched_pages == 0
+      assert info.success_pages == 0
+      assert info.failed_pages == 0
+      assert info.all_numbers == []
+      assert info.sorted_numbers == []
+      assert is_nil(info.sort_strategy)
+      assert is_nil(info.finish_fecthed_at)
+    end
+  end
+
   describe "update_info/1" do
     test "successfully update info" do
       Factory.insert(:info)

@@ -89,6 +89,22 @@ defmodule EtlChallenge.Services.PageServiceTest do
       assert page.numbers == [1, 2, 3]
       assert is_nil(page.fail_reason)
     end
+
+    test "successfully update failed page with same error reason" do
+      _page =
+        Factory.insert(:page,
+          page: 1,
+          is_failed: true,
+          fail_reason: "api timeout"
+        )
+
+      assert {:ok, page} = PageService.save_page(%ErrorDto{page: 1, reason: "api timeout"})
+
+      assert page.page == 1
+      assert page.is_failed == true
+      assert page.numbers == []
+      assert page.fail_reason == "api timeout"
+    end
   end
 
   describe "stats/2" do
