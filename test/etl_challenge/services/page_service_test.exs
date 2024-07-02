@@ -107,7 +107,7 @@ defmodule EtlChallenge.Services.PageServiceTest do
     end
   end
 
-  describe "stats/2" do
+  describe "stats/0" do
     test "returns all info" do
       Enum.each(1..3, &Factory.insert(:page, page: &1, is_failed: true))
       Enum.each(4..5, &Factory.insert(:page, page: &1, is_failed: false))
