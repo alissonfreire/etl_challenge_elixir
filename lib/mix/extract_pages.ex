@@ -5,6 +5,7 @@ defmodule Mix.Tasks.ExtractPages do
   """
   use Mix.Task
 
+  alias EtlChallenge.Services.PageService
   alias EtlChallenge.Extractor
   alias EtlChallenge.Models.Info
   alias EtlChallenge.Services.InfoService
@@ -30,7 +31,9 @@ defmodule Mix.Tasks.ExtractPages do
     opts = setup_opts(opts)
 
     if Keyword.get(opts, :reset_database, false) do
-      Mix.Task.run("ecto.reset")
+      IO.puts("Reset pages and info!")
+      {:ok, _} = PageService.clear_all_pages()
+      {:ok, _} = InfoService.reset_info()
     end
 
     Extractor.start_fetch(opts)
@@ -43,13 +46,11 @@ defmodule Mix.Tasks.ExtractPages do
   defp show_info(%Info{} = info) do
     IO.puts("|--------------------------")
     IO.puts("|           INFO           ")
-    IO.puts("| fetched_pages: #{info.fetched_pages}")
-    IO.puts("| success_pages: #{info.success_pages}")
-    IO.puts("|  failed_pages: #{info.failed_pages}")
+    IO.puts("| fetched pages: #{info.fetched_pages}")
+    IO.puts("| success pages: #{info.success_pages}")
+    IO.puts("|  failed pages: #{info.failed_pages}")
     IO.puts("|--------------------------")
   end
-
-  def call(_hook, _args, _ctx), do: :ok
 
   defp setup_opts(opts) do
     until_last_page = Keyword.get(opts, :until_last_page, false)
