@@ -59,6 +59,13 @@ defmodule EtlChallenge.Models.Info do
     |> put_start_fecthed_at()
   end
 
+  def reset_changeset do
+    get_info()
+    |> cast(%{}, @required_fields)
+    |> reset_fields()
+    |> put_change(:last_page, 0)
+  end
+
   defp maybe_put_attempt(changeset) do
     do_increment_field(changeset, :attempt, 0)
   end
@@ -79,6 +86,7 @@ defmodule EtlChallenge.Models.Info do
     |> put_change(:sort_strategy, nil)
     |> put_change(:all_numbers, [])
     |> put_change(:sorted_numbers, [])
+    |> put_change(:start_fecthed_at, nil)
     |> put_change(:finish_fecthed_at, nil)
   end
 
