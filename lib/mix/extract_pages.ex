@@ -5,10 +5,10 @@ defmodule Mix.Tasks.ExtractPages do
   """
   use Mix.Task
 
-  alias EtlChallenge.Services.PageService
   alias EtlChallenge.Extractor
   alias EtlChallenge.Models.Info
   alias EtlChallenge.Services.InfoService
+  alias EtlChallenge.Services.PageService
 
   require Logger
 
