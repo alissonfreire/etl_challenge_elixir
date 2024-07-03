@@ -107,7 +107,7 @@ defmodule EtlChallenge.Services.PageServiceTest do
     end
   end
 
-  describe "stats/2" do
+  describe "stats/0" do
     test "returns all info" do
       Enum.each(1..3, &Factory.insert(:page, page: &1, is_failed: true))
       Enum.each(4..5, &Factory.insert(:page, page: &1, is_failed: false))
@@ -117,6 +117,21 @@ defmodule EtlChallenge.Services.PageServiceTest do
                total_failed: 3,
                total_success: 2
              } = PageService.stats()
+    end
+  end
+
+  describe "get_all_page_numbers/0" do
+    test "returns all numbers" do
+      all_numbers =
+        Enum.reduce(1..10, [], fn page_number, acc ->
+          numbers = Enum.map(1..100, fn _ -> :rand.uniform() end)
+
+          Factory.insert(:page, page: page_number, is_failed: false, numbers: numbers)
+
+          acc ++ numbers
+        end)
+
+      assert ^all_numbers = PageService.get_all_page_numbers()
     end
   end
 
