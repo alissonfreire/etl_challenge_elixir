@@ -2,6 +2,12 @@ defmodule Mix.Tasks.ExtractPages do
   @moduledoc """
   The extract pages mix task
   `mix extract_pages`
+
+  ## Params
+    --last-page: (integer) indicates the number of the last page
+    --until-last-page: (boolean) indicates whether it will run until the last page
+    --only-failed-pages: (boolean) extract only failed pages
+    --reset-database: (boolean) deletes all extracted pages and resets the info
   """
   use Mix.Task
 
