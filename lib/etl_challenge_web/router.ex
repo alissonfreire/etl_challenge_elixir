@@ -17,7 +17,7 @@ defmodule EtlChallengeWeb.Router do
   scope "/", EtlChallengeWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", Live.Index
   end
 
   # Other scopes may use custom stacks.
