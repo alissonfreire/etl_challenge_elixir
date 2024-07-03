@@ -35,4 +35,6 @@ etl_challenge-*.tar
 npm-debug.log
 /assets/node_modules/
 
+/benchmark/results
+
 *.env
